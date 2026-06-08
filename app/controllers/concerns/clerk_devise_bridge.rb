@@ -43,7 +43,8 @@ module ClerkDeviseBridge
 
   def primary_email(clerk_user)
     addresses = clerk_user.respond_to?(:email_addresses) ? clerk_user.email_addresses : nil
-    addresses&.first&.email_address&.to_s&.downcase.presence
+    first = addresses&.first
+    first&.email_address.to_s.downcase.presence
   end
 
   def provision_user_for_clerk(email, clerk_user)
