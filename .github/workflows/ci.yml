@@ -172,6 +172,12 @@ jobs:
           NODE_ENV: test
           COVERAGE: true
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/docuseal_test
+          # The Clerk SDK auto-mounts a Rack middleware that raises
+          # "secret key is not set" on every request when unset, which fails all
+          # request/system specs in CI. A dummy test key lets the middleware
+          # no-op (no __session cookie in tests → unauthenticated → Devise login
+          # helpers drive auth as before).
+          CLERK_SECRET_KEY: sk_test_dummy_ci_key_not_a_real_secret
         run: |
           bundle exec rake db:create
           bundle exec rake db:migrate
