@@ -178,6 +178,7 @@ jobs:
           # no-op (no __session cookie in tests → unauthenticated → Devise login
           # helpers drive auth as before).
           CLERK_SECRET_KEY: sk_test_dummy_ci_key_not_a_real_secret
+          CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
         run: |
           bundle exec rake db:create
           bundle exec rake db:migrate
