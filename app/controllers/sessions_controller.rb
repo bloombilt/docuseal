@@ -43,7 +43,11 @@ class SessionsController < Devise::SessionsController
   # Replaces Devise's default respond_to_on_destroy, which renders the local
   # password sign-in page that the Clerk migration deliberately leaves
   # unlinked from the UI.
-  def respond_to_on_destroy
+  #
+  # Signature must match Devise::SessionsController#destroy, which calls this as
+  # `respond_to_on_destroy(non_navigational_status: :no_content)`. We ignore the
+  # kwarg and always redirect, but it has to be accepted or sign-out 500s.
+  def respond_to_on_destroy(non_navigational_status: :no_content)
     redirect_to ApplicationController::ACCOUNT_PORTAL_SIGN_IN_URL, allow_other_host: true
   end
 
