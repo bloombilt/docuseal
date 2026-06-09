@@ -23,7 +23,7 @@ module ClerkDeviseBridge
     clerk_user = safe_clerk_user
     return unless clerk_user
 
-    return unless clerk.organization&.slug == STAFF_ORG_SLUG
+    return unless clerk_active_org_slug == STAFF_ORG_SLUG
 
     email = primary_email(clerk_user)
     return unless email
@@ -38,6 +38,22 @@ module ClerkDeviseBridge
     clerk.user
   rescue StandardError => e
     Rails.logger.warn("[clerk-bridge] reading clerk.user failed: #{e.class}: #{e.message}")
+    nil
+  end
+
+  # clerk-sdk-ruby 5.1.3's Clerk::Proxy#organization is broken: fetch_org calls
+  # organizations.get(org_id:) but the API method's keyword is organization_id:,
+  # so clerk.organization raises ArgumentError for every org-scoped session
+  # (which 500s every page once there's a Clerk cookie but no Devise session,
+  # e.g. right after sign-out). Resolve the active org's slug ourselves with the
+  # correct keyword, reading org_id from the session claims, and fail closed.
+  def clerk_active_org_slug
+    org_id = clerk.organization_id
+    return nil unless org_id
+
+    Clerk::SDK.new.organizations.get(organization_id: org_id).organization&.slug
+  rescue StandardError => e
+    Rails.logger.warn("[clerk-bridge] reading clerk organization failed: #{e.class}: #{e.message}")
     nil
   end
 
