@@ -9,6 +9,20 @@ class McpController < ActionController::API
   end
 
   def call
+    # A GET is a client opening the optional server->client SSE stream. We don't
+    # offer one, and the Streamable HTTP spec is explicit that the only two legal
+    # answers are `Content-Type: text/event-stream` or 405 Method Not Allowed.
+    #
+    # `head :ok` reads to a client as "stream opened", it then sees EOF straight
+    # away and reconnects, forever. Claude Code held ~1.5 req/sec against this
+    # endpoint for as long as it was configured, which kept the whole service
+    # awake and defeated Railway's app sleeping.
+    #
+    # Keyed off `post?` rather than `get?` because Rails routes HEAD through the
+    # GET handler while `request.get?` is false for it, so a HEAD would slip past
+    # and reach `head :ok` again. Only POST carries a JSON-RPC message.
+    return head :method_not_allowed unless request.post?
+
     return head :ok if request.raw_post.blank?
 
     body = JSON.parse(request.raw_post)
