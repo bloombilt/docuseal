@@ -46,8 +46,9 @@ class SessionsController < Devise::SessionsController
   #
   # Signature must match Devise::SessionsController#destroy, which calls this as
   # `respond_to_on_destroy(non_navigational_status: :no_content)`. We ignore the
-  # kwarg and always redirect, but it has to be accepted or sign-out 500s.
-  def respond_to_on_destroy(non_navigational_status: :no_content)
+  # kwarg and always redirect, but it has to be accepted or sign-out 500s, so
+  # take any keywords with `**`.
+  def respond_to_on_destroy(**)
     redirect_to ApplicationController::ACCOUNT_PORTAL_SIGN_IN_URL, allow_other_host: true
   end
 
