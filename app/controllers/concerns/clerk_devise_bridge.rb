@@ -19,6 +19,9 @@ module ClerkDeviseBridge
 
   def sign_in_from_clerk_session
     return if user_signed_in?
+    # config/initializers/clerk.rb excludes the signing routes, so there's no
+    # Clerk session to read on them.
+    return if request.env['clerk.excluded_route']
 
     clerk_user = safe_clerk_user
     return unless clerk_user
